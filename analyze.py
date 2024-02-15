@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 mat = scipy.io.loadmat(input("Enter matlab file path: "))       # Load in the matlab file through user inputed file path
-outcome = input("Enter outcome variable name: ")
+outcome = input("Enter outcome variable: ")
 data = mat["data"]                                              # The 2d array containing all data
 titles = mat["titles"]                                          # The array of channel titles
 

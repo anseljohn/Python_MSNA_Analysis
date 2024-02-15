@@ -1,3 +1,2 @@
-An open-source program to analyze spontaneous sympathetic neurohemodynamic transduction
+An open-source program to analyze spontaneous sympathetic neurohemodynamic transduction using python. [Link to paper.](https://pubmed.ncbi.nlm.nih.gov/33596745/)
 
-https://pubmed.ncbi.nlm.nih.gov/33596745/

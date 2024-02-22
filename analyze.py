@@ -3,24 +3,36 @@ import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 
-mat = scipy.io.loadmat(input("Enter matlab file path: "))       # Load in the matlab file through user inputed file path
-outcome = input("Enter outcome variable: ")
-data = mat["data"]                                              # The 2d array containing all data
-titles = mat["titles"]                                          # The array of channel titles
+mat = scipy.io.loadmat(input("Enter matlab file path: ")) # Loading the matlab file in
+outcome = input("Enter outcome variable: ") # Ask user to input their desired outcome variable
+
+# Data is structured as such:
+# [channel 1 start, ..., channel 1 end, channel 2 start, ..., channel 2 end , ...]
+data = mat["data"]
+
+# The array of channel titles
+titles = mat["titles"]
 
 # Get the index of the array holding "title"'s data e.g. "ECG" data
 # Exits with failure if the data cannot be found
-def get_title_ind(title):
+def ind(title):
     for i in range(len(titles)):
         if titles[i].strip() == title: # Titles may end up with trailing whitespace which must be stripped
             return i
     sys.exit("No " + title + " data found.")
 
-outcome = data[get_title_ind(outcome)]
-ecg = data[get_title_ind("ECG")]
-msna = data[get_title_ind("Integrated MSNA")]
-bc_no = data[get_title_ind("Burst Comment Number")]
-bs = data[get_title_ind("Burst Size")]
+# Get the entire array of data corresponding to a channel
+# i.e. get_data('ECG') will return data[start ecg data, ..., end of ecg data]
+def get_data(title):
+    start = int(mat['datastart'][0][ind(title)]) # Get the starting index from datastart
+    end = int(mat['dataend'][0][ind(title)]) # Get the end index from dataend
+    return data[start:end]
+
+outcome = get_data(outcome)
+ecg = get_data("ECG")
+msna = get_data("Integrated MSNA")
+bc_no = get_data("Burst Comment Number")
+bs = get_data("Burst Size")
 data_len = len(ecg)
 
 # Determining bursts based on burst comment numbers

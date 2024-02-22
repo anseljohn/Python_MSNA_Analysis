@@ -3,17 +3,38 @@ import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 
-mat = scipy.io.loadmat(input("Enter matlab file path: ")) # Loading the matlab file in
-outcome = input("Enter outcome variable: ") # Ask user to input their desired outcome variable
+#################################################################################
+#   Getting base required data (data, titles, comments) and checking validity   #
+#################################################################################
+
+# Exit if the there aren't enough arguments
+if (len(sys.argv) < 3):
+    sys.exit("Error: Syntax: python analyze.py path/to/matlab_data.mat \"Outcome Variable Name\"")
+
+mat = scipy.io.loadmat(sys.argv[1]) # Loading the matlab file in by command line arg
+titles = mat["titles"] # The array of channel titles
+coms = mat["com"] # The array of comments and their info
+com_names = mat["comtext"] # The array of comment names
 
 # Data is structured as such:
 # [channel 1 start, ..., channel 1 end, channel 2 start, ..., channel 2 end , ...]
 data = mat["data"]
 
-# The array of channel titles
-titles = mat["titles"]
+# Checking if BURST exists
+has_burst = False
+for com in mat["comtext"]:
+    if com.strip() == "BURST":
+        has_burst = True
+        break
 
-# Get the index of the array holding "title"'s data e.g. "ECG" data
+if not has_burst:
+    sys.exit("No burst comments found. Please make sure to label MSNA bursts as \"BURST\"")
+
+########################
+#   Helper functions   #
+########################
+
+# Get the index "title"'s data e.g. "ECG" data
 # Exits with failure if the data cannot be found
 def ind(title):
     for i in range(len(titles)):
@@ -22,18 +43,39 @@ def ind(title):
     sys.exit("No " + title + " data found.")
 
 # Get the entire array of data corresponding to a channel
-# i.e. get_data('ECG') will return data[start ecg data, ..., end of ecg data]
+# i.e. get_data('ECG') will return data[start of ecg data, ..., end of ecg data]
 def get_data(title):
     start = int(mat['datastart'][0][ind(title)]) # Get the starting index from datastart
     end = int(mat['dataend'][0][ind(title)]) # Get the end index from dataend
     return data[start:end]
 
-outcome = get_data(outcome)
+# Get the index of "com"'s data e.g. "BURST"
+# Exits with failure if the comment does not exist
+def com_ind(com):
+    for i in range(len(com_names)):
+        if com_names[i].strip() == com:
+            return i
+    sys.exit("Comment \"" + com + "\" not found.")
+
+# Determines if the comment you're looking at is labelled des
+# i.e. is_com(3, "BURST") returns whether comment #4 is labelled "BURST"
+def is_com(com_ind, des):
+    return coms[com_ind][4] == com_ind(des)
+
+#####################################
+#   Getting required channel data   #
+#####################################
+
+outcome = get_data(sys.argv[2])
 ecg = get_data("ECG")
 msna = get_data("Integrated MSNA")
 bc_no = get_data("Burst Comment Number")
 bs = get_data("Burst Size")
 data_len = len(ecg)
+
+#######################
+#   Actual analysis   #
+#######################
 
 # Determining bursts based on burst comment numbers
 is_burst = []

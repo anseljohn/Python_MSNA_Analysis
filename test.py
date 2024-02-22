@@ -3,16 +3,6 @@ import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 
-mat = scipy.io.loadmat(input("Enter matlab file path: "))       # Load in the matlab file through user inputed file path
-data = mat['data'][0]
-titles = mat['titles']
-
-def starts(index):
-    return int(mat['datastart'][0][index])
-
-def ends(index):
-    return int(mat['dataend'][0][index])
-
 def ind(title):
     for i in range(len(titles)):
         if titles[i].strip() == title: # Titles may end up with trailing whitespace which must be stripped
@@ -24,5 +14,17 @@ def get_data(title):
     end = int(mat['dataend'][0][ind(title)])
     return data[start:end]
 
+
+# Exit if there aren't enough arguments
+if (len(sys.argv) < 3):
+    sys.exit("Error: Syntax: python analyze.py path/to/matlab_data.mat \"Outcome Variable Name\"")
+
+# Loading the matlab file in by command line arg
+mat = scipy.io.loadmat(sys.argv[1]) 
+
+data = mat['data'][0]
+titles = mat['titles']
 ecg = get_data("ECG")
 print(ecg)
+print(mat)
+print(mat["com"])

@@ -19,17 +19,11 @@ Running the analysis requires two arguments, the path to the data pad spreadshee
 
 For using MAP:
 
-    $ python datapad_analysis.py /path/to/spreadsheet.xlsx MAP
+    $ python run.py /path/to/spreadsheet.xlsx MAP
 
 For using MDP:
 
-    $ python datapad_analysis.py /path/to/spreadshit.xlsx MDP
-
-
-The output will look like the following:
-
-    Max average absolute change: ###.##
-    Max absolute percent change: ###%
+    $ python run.py /path/to/spreadshit.xlsx MDP
 
 ## Differences of Analysis
 This analysis does some things differently than in the paper, the differences are highlighted below.

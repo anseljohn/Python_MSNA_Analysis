@@ -48,12 +48,17 @@ for i in range(data_len):
         normalized_burst_amplitude_percent.append(burst_sizes[i] / largest_burst * 100)
     else:
         normalized_burst_amplitude_percent.append(None)
+
+# Creating the analyzer
 analyzer = ta.Transduction_Analysis(data_len, outcome, burst_checks, normalized_burst_amplitude_percent)
+
+# Calculating and printing overall NVTD values
 overall_NVTD_values = analyzer.overall_NVTD()
 print("Max Overall Transduction Values:")
 print("\tAverage Absolute Change: " + str(overall_NVTD_values[0]))
 print("\tAverage Percent Change:  " + str(overall_NVTD_values[1]) + "\n")
 
+# Calculating and printing overall NVTD values per burst frequency
 burst_pattern_values = analyzer.burst_pattern()
 print("Average Normalized Burst Sizes Per Sequence:")
 
@@ -67,5 +72,5 @@ for i in range(4):
     print("\t\tOverall NVTD: ", end="")
     print(burst_pattern_values[i][1])
     print("\t\tAverage Normalized Burst Amplitude: " + str(burst_pattern_values[i][2]))
-    print()
+    print()g
 

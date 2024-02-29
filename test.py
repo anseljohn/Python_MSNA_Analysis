@@ -10,10 +10,10 @@ def ind(title):
     sys.exit("No " + title + " data found.")
 
 def get_data(title):
-    start = int(mat['datastart'][0][ind(title)])
-    end = int(mat['dataend'][0][ind(title)])
+    title_ind = ind(title)
+    start = int(mat['datastart'].item(title_ind))
+    end = int(mat['dataend'].item(title_ind))
     return data[start:end]
-
 
 # Exit if there aren't enough arguments
 if (len(sys.argv) < 3):
@@ -25,6 +25,7 @@ mat = scipy.io.loadmat(sys.argv[1])
 data = mat['data'][0]
 titles = mat['titles']
 ecg = get_data("ECG")
-print(ecg)
-print(mat)
-print(mat["com"])
+#print(ecg)
+#print(mat["com"])
+print(len(ecg))
+print(len(get_data("Integrated MSNA")))

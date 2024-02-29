@@ -3,6 +3,12 @@ import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 
+#################
+#   Constants   #
+#################
+COM_TYPE = 4
+COM_POS = 2
+
 #################################################################################
 #   Getting base required data (data, titles, comments) and checking validity   #
 #################################################################################
@@ -45,8 +51,9 @@ def ind(title):
 # Get the entire array of data corresponding to a channel
 # i.e. get_data('ECG') will return data[start of ecg data, ..., end of ecg data]
 def get_data(title):
-    start = int(mat['datastart'][0][ind(title)]) # Get the starting index from datastart
-    end = int(mat['dataend'][0][ind(title)]) # Get the end index from dataend
+    title_ind = ind(title)
+    start = int(mat['datastart'].item(title_ind)) # Get the starting index from datastart
+    end = int(mat['dataend'].item(title_ind)) # Get the end index from dataend
     return data[start:end]
 
 # Get the index of "com"'s data e.g. "BURST"
@@ -57,10 +64,20 @@ def com_ind(com):
             return i
     sys.exit("Comment \"" + com + "\" not found.")
 
+burst_ind = -1
+for i in range(len(com_names)):
+    if com_names[i].strip() == "BURST":
+        burst_ind = i
+
+if burst_ind == -1:
+    sys.exit("\"BURST\" comments not found. Please label MSNA bursts as \"BURST\".")
+
 # Determines if the comment you're looking at is labelled des
 # i.e. is_com(3, "BURST") returns whether comment #4 is labelled "BURST"
 def is_com(com_ind, des):
     return coms[com_ind][4] == com_ind(des)
+def is_com(com_ind):
+    return coms[com_ind][4] == com_ind("BURST")
 
 #####################################
 #   Getting required channel data   #
@@ -69,9 +86,14 @@ def is_com(com_ind, des):
 outcome = get_data(sys.argv[2])
 ecg = get_data("ECG")
 msna = get_data("Integrated MSNA")
-bc_no = get_data("Burst Comment Number")
-bs = get_data("Burst Size")
+#bc_no = get_data("Burst Comment Number")
+#bs = get_data("Burst Size")
 data_len = len(ecg)
+
+is_burst = {}
+for i in range(len(coms)):
+    if is_com(i):
+        is_burst[coms[i][COM_POS]] = True
 
 #######################
 #   Actual analysis   #
@@ -140,3 +162,4 @@ abs_percent_change = [x / len(percent_change_vals) for x in abs_percent_change]
 
 print("Max average absolute change: %d", max(avg_abs_change))
 print("Max absolute percent change: %d", max(abs_percent_change))
+

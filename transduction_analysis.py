@@ -113,7 +113,7 @@ class Transduction_Analysis:
                     seq_len += 1
                     j += 1
 
-                # Quadruplets+ aren't considered
+                # Quadruplets+ aren't counted
                 if seq_len <= 3:
                     seq_lens[i] = seq_len
 
@@ -134,7 +134,7 @@ class Transduction_Analysis:
         for i in range(self.full_12cc_burst_cnt):
             if i in seq_lens:
                 seq = seqs[seq_lens[i] - 1]
-                seq_overall_NVTD = data_by_seq[seq]['Overall NVTD (12 cc)']
+                seq_overall_NVTD = data_by_seq[seq][seq_data_titles[1]]
                 data_by_seq[seq][seq_data_titles[1]] = [x + y for x, y in zip(seq_overall_NVTD, self.abs_change_vals[i])]
                 data_by_seq[seq][seq_data_titles[0]] += 1
                 data_by_seq[seqs[3]][seq_data_titles[1]] = [x + y for x, y in zip(data_by_seq['Overall'][seq_data_titles[1]], self.abs_change_vals[i])]
@@ -149,31 +149,6 @@ class Transduction_Analysis:
 
         for seq in seqs:
             data_by_seq[seq][seq_data_titles[2]] /= data_by_seq[seq][seq_data_titles[0]]
-            data_by_seq[seq][seq_data_titles[1]] = [x / data_by_seq[seq]['Count'] for x in data_by_seq[seq][seq_data_titles[1]]]
-
-
-        # seq_cnt_ind = 0
-        # seq_ONVTD_ind = 1
-        # seq_amp_ind = 2
-
-        # for i in range(self.full_12cc_burst_cnt):
-        #     if i in seq_lens:
-        #         seq_ind = seq_lens[i] - 1
-        #         seq_overall_NVTD = data_by_seq[seq_ind][1]
-        #         data_by_seq[seq_ind][seq_ONVTD_ind] = [x + y for x, y in zip(seq_overall_NVTD, self.abs_change_vals[i])]
-        #         data_by_seq[seq_ind][seq_cnt_ind] += 1
-        #         data_by_seq[3][seq_ONVTD_ind] = [x + y for x, y in zip(data_by_seq[3][seq_ONVTD_ind], self.abs_change_vals[i])]
-        #         data_by_seq[3][seq_cnt_ind] += 1
-
-        # for key in seq_lens.keys():
-        #     seq_len = seq_lens[key]
-        #     for i in range(key, key + seq_len):
-        #         curr_amplitude = self.normalized_burst_amplitude_percent[i]
-        #         data_by_seq[seq_len-1][seq_amp_ind] += curr_amplitude
-        #         data_by_seq[3][seq_amp_ind] += (curr_amplitude)
-
-        # for i in range(4):
-        #     data_by_seq[i][seq_amp_ind] /= data_by_seq[i][seq_cnt_ind]
-        #     data_by_seq[i][seq_ONVTD_ind] = [x / data_by_seq[i][seq_cnt_ind] for x in data_by_seq[i][seq_ONVTD_ind]]
+            data_by_seq[seq][seq_data_titles[1]] = [x / data_by_seq[seq][seq_data_titles[0]] for x in data_by_seq[seq][seq_data_titles[1]]]
 
         return {"Neurovascular Transduction by Burst Pattern" : data_by_seq}

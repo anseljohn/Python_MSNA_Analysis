@@ -1,12 +1,12 @@
-# Python NVTD Analysis
-An open-source program to analyze spontaneous sympathetic neurohemodynamic transduction using python. [Link to paper.](https://pubmed.ncbi.nlm.nih.gov/33596745/)
+# Python Spontaneous NVTD Analysis
+An open-source program to analyze spontaneous sympathetic neurohemodynamic transduction using python based on this [paper](https://pubmed.ncbi.nlm.nih.gov/33596745/).
 
-Automates transduction analysis based off of the paper's [spreadsheet](https://doi.org/10.6084/m9.figshare.13692139), using sheet 'Overall_NVTD'.
+Analysis is done using the methods in the paper's [analysis spreadsheet](https://doi.org/10.6084/m9.figshare.13692139).
 
 ## Setup
-Make sure required python packages are installed
+Make sure the required python packages are installed:
 
-    python -m pip install pandas, openpyxl
+    $ python -m pip install pandas, openpyxl
 
 ### Copy your data pad into an excel sheet
 1. Open your .adicht file in LabChart
@@ -15,17 +15,11 @@ Make sure required python packages are installed
 4. Copy and paste the data into an empty excel spreadsheet and save the file
    
 ## Running the analysis
-Running the analysis requires two arguments, the path to the data pad spreadsheet and whether you want to use mean arterial pressure (MAP) or mean diastolic pressure (MDP).
-
-For using MAP:
+Running the analysis requires the path to the data pad spreadsheet:
 
     $ python run.py /path/to/spreadsheet.xlsx MAP
 
-For using MDP:
-
-    $ python run.py /path/to/spreadshit.xlsx MDP
-
-## Differences of Analysis
+## Notes
 This analysis does some things differently than in the paper, the differences are highlighted below.
 
-- 
+- The sheet titled '**Overall_NVTD**' in the paper's analysis spreadsheet skips a cardiac cycle between CC5 and CC6 under '**TRACKING ABSOLUTE VALUES**'. This is accounted for in this program.

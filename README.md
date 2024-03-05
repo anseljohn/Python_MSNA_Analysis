@@ -17,7 +17,7 @@ Make sure the required python packages are installed:
 ## Running the analysis
 Running the analysis requires the path to the data pad spreadsheet:
 
-    $ python run.py /path/to/spreadsheet.xlsx MAP
+    $ python run.py /path/to/spreadsheet.xlsx
 
 ## Notes
 This analysis does some things differently than in the paper, the differences are highlighted below.

@@ -1,3 +1,6 @@
+import statistics as stats
+import numpy as np
+
 class Transduction_Analysis:
     # Absolute change values in sets of 12 cardiac cycles
     abs_change_vals = []
@@ -12,8 +15,7 @@ class Transduction_Analysis:
         self.normalized_burst_amplitude_percent = normalized_burst_amplitude_percent
 
     # Calculates max overall transduction values
-    # Returns:
-    #   [max average absolute change, max average percent change]
+    # Returns a dictionary containing with labelled data (for the purpose of writing to file)
     def overall_NVTD(self):
         # Calculating absolute values in sets of 12 post-burst cardiac cycles
         abs_vals = []
@@ -57,14 +59,30 @@ class Transduction_Analysis:
         avg_abs_change = [x / self.full_12cc_burst_cnt for x in avg_abs_change]
 
         # Averaging the percentages for a set of 12 cardiac cycles
-        avg_abs_percent_change = [0] * 12
+        avg_percent_change = [0] * 12
         for i in range(len(percent_change_vals)):
             for j in range(12):
-                avg_abs_percent_change[j] += percent_change_vals[i][j]
-        avg_abs_percent_change = [x / len(percent_change_vals) for x in avg_abs_percent_change]
+                avg_percent_change[j] += percent_change_vals[i][j]
+        avg_percent_change = [x / len(percent_change_vals) for x in avg_percent_change]
 
-        return [max(avg_abs_change), max(avg_abs_percent_change)]
+        return {
+            "Overall Neurovascular Transduction" :
+                {
+                    "Absolute Change" : 
+                        {
+                            "Average (12 cc)" : avg_abs_change,
+                            "Standard Deviation (12 cc)" : [stats.stdev(np.array(self.abs_change_vals)[:, i]) for i in range(12)], 
+                            "Max AAC" : max(avg_abs_change)
+                        },
 
+                    "Percent Change" :
+                        {
+                            "Average (12 cc)" : avg_percent_change,
+                            "Standard Deviation (12 cc)" : [stats.stdev(np.array(percent_change_vals)[:, i]) for i in range(12)],
+                            "Max APC" : max(avg_percent_change)
+                        }
+                }
+        }
 
     # Returns a matrix corresponding to [burst_frequency][value]
     #   [0][] = singlets
@@ -100,34 +118,62 @@ class Transduction_Analysis:
                     seq_lens[i] = seq_len
 
             i = j+1
-        data_by_seq = [     #      Count          Overall NVTD,       Avg Normalized Burst Amplitude
-                                    [0,              [0]*12,                     0],                                # Singlets
-                                    [0,              [0]*12,                     0],                                # Doublets
-                                    [0,              [0]*12,                     0],                                # Triplets
-                                    [0,              [0]*12,                     0],                                # Overall
-                                ]
-        seq_cnt_ind = 0
-        seq_ONVTD_ind = 1
-        seq_amp_ind = 2
+        
+        seqs = ['Singlets', 'Doublets', 'Triplets', 'Overall']
+        seq_data_titles = ['Count', 'Overall NVTD (12 cc)', 'Average Normalized Burst Amplitude']
+        seq_data = {
+                        seq_data_titles[0] : 0,
+                        seq_data_titles[1] : [0]*12,
+                        seq_data_titles[2] : 0
+                   }
 
+        data_by_seq = {}
+        for i in range(4):
+            data_by_seq[seqs[i]] = seq_data.copy()
+        
         for i in range(self.full_12cc_burst_cnt):
             if i in seq_lens:
-                seq_ind = seq_lens[i] - 1
-                seq_overall_NVTD = data_by_seq[seq_ind][1]
-                data_by_seq[seq_ind][seq_ONVTD_ind] = [x + y for x, y in zip(seq_overall_NVTD, self.abs_change_vals[i])]
-                data_by_seq[seq_ind][seq_cnt_ind] += 1
-                data_by_seq[3][seq_ONVTD_ind] = [x + y for x, y in zip(data_by_seq[3][seq_ONVTD_ind], self.abs_change_vals[i])]
-                data_by_seq[3][seq_cnt_ind] += 1
+                seq = seqs[seq_lens[i] - 1]
+                seq_overall_NVTD = data_by_seq[seq]['Overall NVTD (12 cc)']
+                data_by_seq[seq][seq_data_titles[1]] = [x + y for x, y in zip(seq_overall_NVTD, self.abs_change_vals[i])]
+                data_by_seq[seq][seq_data_titles[0]] += 1
+                data_by_seq[seqs[3]][seq_data_titles[1]] = [x + y for x, y in zip(data_by_seq['Overall'][seq_data_titles[1]], self.abs_change_vals[i])]
+                data_by_seq[seqs[3]][seq_data_titles[0]] += 1
 
         for key in seq_lens.keys():
             seq_len = seq_lens[key]
             for i in range(key, key + seq_len):
                 curr_amplitude = self.normalized_burst_amplitude_percent[i]
-                data_by_seq[seq_len-1][seq_amp_ind] += curr_amplitude
-                data_by_seq[3][seq_amp_ind] += (curr_amplitude)
+                data_by_seq[seqs[seq_len-1]][seq_data_titles[2]] += curr_amplitude
+                data_by_seq[seqs[3]][seq_data_titles[2]] += curr_amplitude
 
-        for i in range(4):
-            data_by_seq[i][seq_amp_ind] /= data_by_seq[i][seq_cnt_ind]
-            data_by_seq[i][seq_ONVTD_ind] = [x / data_by_seq[i][seq_cnt_ind] for x in data_by_seq[i][seq_ONVTD_ind]]
+        for seq in seqs:
+            data_by_seq[seq][seq_data_titles[2]] /= data_by_seq[seq][seq_data_titles[0]]
+            data_by_seq[seq][seq_data_titles[1]] = [x / data_by_seq[seq]['Count'] for x in data_by_seq[seq][seq_data_titles[1]]]
 
-        return data_by_seq
+
+        # seq_cnt_ind = 0
+        # seq_ONVTD_ind = 1
+        # seq_amp_ind = 2
+
+        # for i in range(self.full_12cc_burst_cnt):
+        #     if i in seq_lens:
+        #         seq_ind = seq_lens[i] - 1
+        #         seq_overall_NVTD = data_by_seq[seq_ind][1]
+        #         data_by_seq[seq_ind][seq_ONVTD_ind] = [x + y for x, y in zip(seq_overall_NVTD, self.abs_change_vals[i])]
+        #         data_by_seq[seq_ind][seq_cnt_ind] += 1
+        #         data_by_seq[3][seq_ONVTD_ind] = [x + y for x, y in zip(data_by_seq[3][seq_ONVTD_ind], self.abs_change_vals[i])]
+        #         data_by_seq[3][seq_cnt_ind] += 1
+
+        # for key in seq_lens.keys():
+        #     seq_len = seq_lens[key]
+        #     for i in range(key, key + seq_len):
+        #         curr_amplitude = self.normalized_burst_amplitude_percent[i]
+        #         data_by_seq[seq_len-1][seq_amp_ind] += curr_amplitude
+        #         data_by_seq[3][seq_amp_ind] += (curr_amplitude)
+
+        # for i in range(4):
+        #     data_by_seq[i][seq_amp_ind] /= data_by_seq[i][seq_cnt_ind]
+        #     data_by_seq[i][seq_ONVTD_ind] = [x / data_by_seq[i][seq_cnt_ind] for x in data_by_seq[i][seq_ONVTD_ind]]
+
+        return {"Neurovascular Transduction by Burst Pattern" : data_by_seq}

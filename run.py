@@ -9,8 +9,37 @@ if (len(sys.argv) < 2):
 ########################
 #   Helper functions   #
 ########################
+# Convert to string and round to two decimal points
 def fstr(f):
     return str(round(f, 2))
+
+# Analysis output formatting
+# transduction_analysis.overall_NVTD() returns a dictionary of data based on
+# average absolute change and average absolute percent change. This function
+# formats the data to be pretty for output
+def output_str(out, depth=0):
+    str = ""
+    for title in out.keys():
+        curr = out[title]
+        for i in range(depth):
+            str += "\t"
+
+        if isinstance(curr, dict):
+            str += title + ":\n" + output_str(curr, depth+1)
+        else:
+            str += title + ": "
+            
+            if isinstance(curr, list):
+                str += "["
+                for i in range(len(curr) - 1):
+                    str += fstr(curr[i]) + ", "
+                str += fstr(curr[i+1]) + "]\n"
+            else:
+                str += fstr(curr) + "\n"
+
+    str += "\n"
+
+    return str
 
 #######################
 #   Data formatting   #
@@ -60,24 +89,6 @@ for outcome_var in outcome_variables.keys():
     # Writing everything to file
     with open(outcome_var + '_transduction_analysis.txt', 'w') as f:
         f.write("Transduction Analysis Using " + outcome_var + " as the Outcome Variable\n\n")
-        f.write("Max Overall Transduction Values:\n")
-        f.write("\tAverage Absolute Change: " + fstr(overall_NVTD_values[0]) + "\n")
-        f.write("\tAverage Percent Change: " + fstr(overall_NVTD_values[1]) + "\n\n")
 
-        f.write("Average Normalized Burst Sizes Per Sequence:\n")
-
-        for i in range(4):
-            if i == 0:   f.write("\tSinglets:\n")
-            elif i == 1: f.write("\tDoublets:\n")
-            elif i == 2: f.write("\tTriplets:\n")
-            elif i == 3: f.write("\tOverall:\n")
-
-            f.write("\t\tCount: " + fstr(burst_pattern_values[i][0]) + "\n")
-            f.write("\t\tOverall NVTD (12 cc): [")
-            bpv_NVTD = burst_pattern_values[i][1]
-            bpv_NVTD_len = len(bpv_NVTD)
-            for j in range(bpv_NVTD_len - 1):
-                f.write(fstr(bpv_NVTD[j]) + ", ")
-            f.write(fstr(bpv_NVTD[bpv_NVTD_len - 1]) + "]\n")
-            f.write("\t\tAverage Normalized Burst Amplitude: " + fstr(burst_pattern_values[i][2]) + "\n\n")
-
+        f.write(output_str(overall_NVTD_values))
+        f.write(output_str(burst_pattern_values))

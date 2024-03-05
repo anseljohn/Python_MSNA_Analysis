@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-import transduction_analysis as ta
+import sample.analyzer as analyzer
 
 # Check validity of call
 if (len(sys.argv) < 2):
@@ -81,10 +81,10 @@ for i in range(data_len):
 # Creating the analyzer
 for outcome_var in outcome_variables.keys():
     outcome = df.iloc[:, outcome_variables[outcome_var]] if outcome_var == "MDP" else df.iloc[:, 5] #TODO: remove IF once MAP is added
-    analyzer = ta.Transduction_Analysis(data_len, outcome, burst_checks, normalized_burst_amplitude_percent)
+    analyzer = analyzer.Analyzer(data_len, burst_checks)
 
-    overall_NVTD_values = analyzer.overall_NVTD()   # Calculating overall NVTD values
-    burst_pattern_values = analyzer.burst_pattern() # Calculating overall NVTD values per burst frequency
+    overall_NVTD_values = analyzer.overall_NVTD(outcome) # Calculating overall NVTD values
+    burst_pattern_values = analyzer.burst_pattern(normalized_burst_amplitude_percent) # Calculating overall NVTD values per burst frequency
 
     # Writing everything to file
     with open(outcome_var + '_transduction_analysis.txt', 'w') as f:

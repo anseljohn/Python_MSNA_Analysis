@@ -1,22 +1,21 @@
 import statistics as stats
 import numpy as np
 
-class Transduction_Analysis:
+class Analyzer:
     # Absolute change values in sets of 12 cardiac cycles
     abs_change_vals = []
 
     # Number of bursts with 12 post-burst cardiac cycle data
     full_12cc_burst_cnt = 0
 
-    def __init__(self, data_len, outcome, burst_checks, normalized_burst_amplitude_percent):
+    def __init__(self, data_len, burst_checks):
         self.data_len = data_len
-        self.outcome = outcome
         self.burst_checks = burst_checks
-        self.normalized_burst_amplitude_percent = normalized_burst_amplitude_percent
 
     # Calculates max overall transduction values
     # Returns a dictionary containing with labelled data (for the purpose of writing to file)
-    def overall_NVTD(self):
+    # i.e. 
+    def overall_NVTD(self, outcome):
         # Calculating absolute values in sets of 12 post-burst cardiac cycles
         abs_vals = []
         for i in range(self.data_len):
@@ -27,7 +26,7 @@ class Transduction_Analysis:
                     break
                 
                 for j in range(i, i+13):
-                    cc.append(self.outcome[j])
+                    cc.append(outcome[j])
 
                 abs_vals.append(cc)
 
@@ -91,7 +90,7 @@ class Transduction_Analysis:
     #       burst_pattern()['Singlets']['Count'] is the number of triplet bursts
     #       burst_pattern()['Doublets']['Overall NVTD (12cc)] is the average 12cc nvtd values for doublets
     #       burst_pattern()['Overall']['Average Normalized Burst Amplitude'] is the overall average normalized burst amplitude
-    def burst_pattern(self):
+    def burst_pattern(self, normalized_burst_amplitude_percent):
         #TODO: change the structure of this depending on its usage
         # A dictionary of 
         seq_lens = {}
@@ -136,7 +135,7 @@ class Transduction_Analysis:
         for key in seq_lens.keys():
             seq_len = seq_lens[key]
             for i in range(key, key + seq_len):
-                curr_amplitude = self.normalized_burst_amplitude_percent[i]
+                curr_amplitude = normalized_burst_amplitude_percent[i]
                 data_by_seq[seqs[seq_len-1]][seq_data_titles[2]] += curr_amplitude
                 data_by_seq[seqs[3]][seq_data_titles[2]] += curr_amplitude
 

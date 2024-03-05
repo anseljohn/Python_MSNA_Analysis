@@ -84,20 +84,13 @@ class Transduction_Analysis:
                 }
         }
 
-    # Returns a matrix corresponding to [burst_frequency][value]
-    #   [0][] = singlets
-    #   [1][] = doublets
-    #   [2][] = triplets
-    #   [3][] = overall
-    #
-    #   [][0] = total number of bursts per burst frequency
-    #   [][1] = 12 cc overall NVTD per burst frequency
-    #   [][2] = average normalized burst amplitude per burst frequency
-    #
+    # Returns a dictionary to access singlet, doublet, triplet, and overall data
+    # Each of the burst patterns' data contain the number of occurrences, 
+    # overall NVTD values, and its average normalizde burst amplitude
     #   i.e. 
-    #       burst_pattern()[2][0] is the number of triplet bursts
-    #       burst_pattern()[1][1] is the average 12cc nvtd values for doublets
-    #       burst_pattern()[3][2] is the overall average normalized burst amplitude
+    #       burst_pattern()['Singlets']['Count'] is the number of triplet bursts
+    #       burst_pattern()['Doublets']['Overall NVTD (12cc)] is the average 12cc nvtd values for doublets
+    #       burst_pattern()['Overall']['Average Normalized Burst Amplitude'] is the overall average normalized burst amplitude
     def burst_pattern(self):
         #TODO: change the structure of this depending on its usage
         # A dictionary of 

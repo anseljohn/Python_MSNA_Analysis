@@ -1,4 +1,5 @@
 import sys
+import os
 import pandas as pd
 import sample.analyzer as anlz 
 
@@ -44,10 +45,22 @@ def output_str(out, depth=0):
 #######################
 #   Data formatting   #
 #######################
+# Create output directory
+if not os.path.exists("./analysis_output"):
+    os.mkdir("./analysis_output")
+
 df = pd.read_excel(sys.argv[1])          # Reading in the file
 df.drop([0, 1], inplace=True)            # Remove units and titles
 df.reset_index(drop=True, inplace=True)  # Reset indexing back to 0
+
+xl = pd.ExcelFile(sys.argv[1])
 outcome_variables = {"MDP": 5, "MAP": 6} # Outcome variables and their respective indices
+
+#TODO: Handle outputting for multiple participants, add rest of code into FOR
+for participant in xl.sheet_names:
+    df = xl.parse(participant)
+    df.drop([0, 1], inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
 ############################################################
 #   Getting required arguments for analyses calculations   #

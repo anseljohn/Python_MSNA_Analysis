@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-import sample.analyzer as analyzer
+import sample.analyzer as anlz 
 
 # Check validity of call
 if (len(sys.argv) < 2):
@@ -44,7 +44,7 @@ def output_str(out, depth=0):
 #######################
 #   Data formatting   #
 #######################
-df = pd.read_excel(sys.argv[1])
+df = pd.read_excel(sys.argv[1])          # Reading in the file
 df.drop([0, 1], inplace=True)            # Remove units and titles
 df.reset_index(drop=True, inplace=True)  # Reset indexing back to 0
 outcome_variables = {"MDP": 5, "MAP": 6} # Outcome variables and their respective indices
@@ -78,10 +78,11 @@ for i in range(data_len):
     else:
         normalized_burst_amplitude_percent.append(None)
 
-# Creating the analyzer
+# Analyzing for MDP and MAP
 for outcome_var in outcome_variables.keys():
+    # Getting the outcome variable data
     outcome = df.iloc[:, outcome_variables[outcome_var]] if outcome_var == "MDP" else df.iloc[:, 5] #TODO: remove IF once MAP is added
-    analyzer = analyzer.Analyzer(data_len, burst_checks)
+    analyzer = anlz.Analyzer(data_len, burst_checks) # Instanciating the analyzer
 
     overall_NVTD_values = analyzer.overall_NVTD(outcome) # Calculating overall NVTD values
     burst_pattern_values = analyzer.burst_pattern(normalized_burst_amplitude_percent) # Calculating overall NVTD values per burst frequency

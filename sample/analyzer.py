@@ -8,11 +8,9 @@ class Analyzer:
     # Number of bursts with 12 post-burst cardiac cycle data
     full_12cc_burst_cnt = 0
 
-    def __init__(self, data_len, burst_checks, outcome):
+    def __init__(self, data_len, burst_checks):
         self.data_len = data_len
         self.burst_checks = burst_checks
-        self.outcome = outcome
-
     def burst_check(self, i, for_bursts):
         return (for_bursts and self.burst_checks[i]) or (not for_bursts and not self.burst_checks[i])
 
@@ -20,7 +18,7 @@ class Analyzer:
     # Returns a dictionary containing labelled data (for the purpose of writing to file)
     # Parameters:
     #   for_bursts (bool) : whether to calculate these values for bursts or non_bursts
-    def overall_calculations(self, for_bursts):
+    def overall_calculations(self, outcome, for_bursts):
         # Calculating absolute values in sets of 12 post-burst cardiac cycles
         abs_vals = []
         for i in range(self.data_len):
@@ -31,7 +29,7 @@ class Analyzer:
                     break
                 
                 for j in range(i, i+13):
-                    cc.append(self.outcome[j])
+                    cc.append(outcome[j])
 
                 abs_vals.append(cc)
 
@@ -70,7 +68,7 @@ class Analyzer:
         avg_percent_change = [x / len(percent_change_vals) for x in avg_percent_change]
 
         return {
-            "Overall Neurovascular Transduction" :
+            "Overall Neurovascular Transduction for " + ("Non-" if not for_bursts else "") + "Bursts":
                 {
                     "Absolute Change" : 
                         {
@@ -125,19 +123,19 @@ class Analyzer:
                         seq_data_titles[1] : [0]*12,
                         seq_data_titles[2] : 0
                    }
+        data_by_seq = {}
+
+        for i in range(4):
+            data_by_seq[seqs[i]] = seq_data.copy()
+
         if for_bursts:
             seq_data[seq_data_titles[2]] = 0
-
             for key in seq_lens.keys():
                 seq_len = seq_lens[key]
                 for i in range(key, key + seq_len):
                     curr_amplitude = normalized_burst_amplitude_percent[i]
                     data_by_seq[seqs[seq_len-1]][seq_data_titles[2]] += curr_amplitude
                     data_by_seq[seqs[3]][seq_data_titles[2]] += curr_amplitude
-
-        data_by_seq = {}
-        for i in range(4):
-            data_by_seq[seqs[i]] = seq_data.copy()
         
         for i in range(self.full_12cc_burst_cnt):
             if i in seq_lens:
@@ -152,4 +150,4 @@ class Analyzer:
             data_by_seq[seq][seq_data_titles[2]] /= data_by_seq[seq][seq_data_titles[0]]
             data_by_seq[seq][seq_data_titles[1]] = [x / data_by_seq[seq][seq_data_titles[0]] for x in data_by_seq[seq][seq_data_titles[1]]]
 
-        return {"Neurovascular Transduction by Burst Pattern" : data_by_seq}
+        return {"Neurovascular Transduction by " + ("Non-" if not for_bursts else "") + "Burst Pattern" : data_by_seq}

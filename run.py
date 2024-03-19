@@ -42,8 +42,6 @@ def output_str(out, depth=0):
 
     return str
 
-def write()
-
 #######################
 #   Data formatting   #
 #######################
@@ -98,16 +96,14 @@ for participant in xl.sheet_names:
 
     # Analyzing for MDP and MAP
     for outcome_var in outcome_variables.keys():
+        participant_data[participant][outcome_var] = []
         # Getting the outcome variable data
         outcome = df.iloc[:, outcome_variables[outcome_var]] if outcome_var == "MDP" else df.iloc[:, 5] #TODO: remove IF once MAP is added
         analyzer = anlz.Analyzer(data_len, burst_checks) # Instanciating the analyzer
 
-        overall_NVTD_values = analyzer.overall_calculations(outcome, True) # Calculating overall NVTD values
-        burst_pattern_values = analyzer.burst_pattern(normalized_burst_amplitude_percent, True) # Calculating overall NVTD values per burst frequency
-        non_burst_values = analyzer.overall_calculations(outcome, False) # Calculating overall NVTD values for non-bursts
-        non_burst_pattern_values = analyzer.burst_pattern(normalized_burst_amplitude_percent, False) # Calculating overall NVTD values per non-burst frequency
-
-        participant_data[participant][outcome_var] = [overall_NVTD_values, burst_pattern_values, non_burst_values, non_burst_pattern_values]
+        for bool in [True, False]:
+            participant_data[participant][outcome_var].append(analyzer.overall_calculations(outcome, bool)) # Overall NVTD values, burst and non-bursts
+            participant_data[participant][outcome_var].append(analyzer.patterns(normalized_burst_amplitude_percent, bool)) # per burst/non-burst frequency
 
 for participant in participant_data.keys():
     data = participant_data[participant]
@@ -116,7 +112,5 @@ for participant in participant_data.keys():
         with open('./analysis_output/' + participant + '_' + outcome_var + '_transduction_analysis.txt', 'w') as f:
             f.write("Transduction Analysis Using " + outcome_var + " as the Outcome Variable\n\n")
 
-            f.write(output_str(overall_NVTD_values))
-            f.write(output_str(burst_pattern_values))
-            f.write(output_str(non_burst_values))
-            
+            for d in data[outcome_var]:
+                f.write(output_str(d))

@@ -57,52 +57,60 @@ xl = pd.ExcelFile(sys.argv[1])
 outcome_variables = {"MDP": 5, "MAP": 6} # Outcome variables and their respective indices
 
 #TODO: Handle outputting for multiple participants, add rest of code into FOR
+participant_data = {}
 for participant in xl.sheet_names:
+    participant_data[participant] = {}
+
     df = xl.parse(participant)
     df.drop([0, 1], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-############################################################
-#   Getting required arguments for analyses calculations   #
-############################################################
-comnums = df.iloc[:, 4] # The burst comment numbers
+    ############################################################
+    #   Getting required arguments for analyses calculations   #
+    ############################################################
+    comnums = df.iloc[:, 4] # The burst comment numbers
 
-#TODO: Change this value to 7 once MAP is added into data pad
-burst_sizes = df.iloc[:, 6] # The burst size or "Integrated MSNA max-min"
-data_len = len(comnums) # The default length of data
-burst_checks = []
-normalized_burst_amplitude_percent = [] # Normalize burst sizes
+    #TODO: Change this value to 7 once MAP is added into data pad
+    burst_sizes = df.iloc[:, 6] # The burst size or "Integrated MSNA max-min"
+    data_len = len(comnums) # The default length of data
+    burst_checks = []
+    normalized_burst_amplitude_percent = [] # Normalize burst sizes
 
-# Determining bursts from burst comment numbers
-burst_cnt = 0
-for i in range(data_len):
-    if i == 0:
-        if (comnums[i] != comnums[i+1]): burst_cnt += 1
-        burst_checks.append(comnums[i] != comnums[i+1])
-    else:
-        if (comnums[i] != comnums[i-1]): burst_cnt +=1
-        burst_checks.append(comnums[i] != comnums[i-1])
+    # Determining bursts from burst comment numbers
+    burst_cnt = 0
+    for i in range(data_len):
+        if i == 0:
+            if (comnums[i] != comnums[i+1]): burst_cnt += 1
+            burst_checks.append(comnums[i] != comnums[i+1])
+        else:
+            if (comnums[i] != comnums[i-1]): burst_cnt +=1
+            burst_checks.append(comnums[i] != comnums[i-1])
 
-# Normalizing burst sizes
-largest_burst = burst_sizes.max() # Grabbing the largest burst
-for i in range(data_len):
-    if burst_checks[i]:
-        normalized_burst_amplitude_percent.append(burst_sizes[i] / largest_burst * 100)
-    else:
-        normalized_burst_amplitude_percent.append(None)
+    # Normalizing burst sizes
+    largest_burst = burst_sizes.max() # Grabbing the largest burst
+    for i in range(data_len):
+        if burst_checks[i]:
+            normalized_burst_amplitude_percent.append(burst_sizes[i] / largest_burst * 100)
+        else:
+            normalized_burst_amplitude_percent.append(None)
 
-# Analyzing for MDP and MAP
-for outcome_var in outcome_variables.keys():
-    # Getting the outcome variable data
-    outcome = df.iloc[:, outcome_variables[outcome_var]] if outcome_var == "MDP" else df.iloc[:, 5] #TODO: remove IF once MAP is added
-    analyzer = anlz.Analyzer(data_len, burst_checks) # Instanciating the analyzer
+    # Analyzing for MDP and MAP
+    for outcome_var in outcome_variables.keys():
+        # Getting the outcome variable data
+        outcome = df.iloc[:, outcome_variables[outcome_var]] if outcome_var == "MDP" else df.iloc[:, 5] #TODO: remove IF once MAP is added
+        analyzer = anlz.Analyzer(data_len, burst_checks) # Instanciating the analyzer
 
-    overall_NVTD_values = analyzer.overall_NVTD(outcome) # Calculating overall NVTD values
-    burst_pattern_values = analyzer.burst_pattern(normalized_burst_amplitude_percent) # Calculating overall NVTD values per burst frequency
+        overall_NVTD_values = analyzer.overall_NVTD(outcome) # Calculating overall NVTD values
+        burst_pattern_values = analyzer.burst_pattern(normalized_burst_amplitude_percent) # Calculating overall NVTD values per burst frequency
 
-    # Writing everything to file
-    with open(outcome_var + '_transduction_analysis.txt', 'w') as f:
-        f.write("Transduction Analysis Using " + outcome_var + " as the Outcome Variable\n\n")
+        participant_data[participant][outcome_var] = [overall_NVTD_values, burst_pattern_values]
 
-        f.write(output_str(overall_NVTD_values))
-        f.write(output_str(burst_pattern_values))
+for participant in participant_data.keys():
+    data = participant_data[participant]
+    for outcome_var in data.keys():
+        # Writing everything to file
+        with open('./analysis_output/' + participant + '_' + outcome_var + '_transduction_analysis.txt', 'w') as f:
+            f.write("Transduction Analysis Using " + outcome_var + " as the Outcome Variable\n\n")
+
+            f.write(output_str(overall_NVTD_values))
+            f.write(output_str(burst_pattern_values))

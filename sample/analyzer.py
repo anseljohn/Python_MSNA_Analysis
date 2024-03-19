@@ -13,19 +13,19 @@ class Analyzer:
         self.burst_checks = burst_checks
     def burst_check(self, i, for_bursts):
         return (for_bursts and self.burst_checks[i]) or (not for_bursts and not self.burst_checks[i])
-
+    
     # Gets absolute values, absolute change values, and percent change values for bursts or non-bursts
     # Returns a dictionary containing labelled data (for the purpose of writing to file)
     # Parameters:
     #   for_bursts (bool) : whether to calculate these values for bursts or non_bursts
-    def overall_calculations(self, outcome, for_bursts):
+    def overall_calculations(self, outcome, for_bursts=True, tertiles=False):
         # Calculating absolute values in sets of 12 post-burst cardiac cycles
         abs_vals = []
         for i in range(self.data_len):
             cc = []
             if self.burst_check(i, for_bursts):
                 # If it cannot be tracked for 12 cardiac cycles, exit
-                if (i + 13 >= self.data_len):
+                if (i + 13 >= len(outcome)):
                     break
                 
                 for j in range(i, i+13):
@@ -35,13 +35,16 @@ class Analyzer:
 
         self.full_12cc_burst_cnt = len(abs_vals) # The number of bursts with 12 post-burst cc data available
 
+        abs_change_vals = []
         # Calculate absolute change in sets of 12 post-burst cardiac cycles
         for i in range(self.full_12cc_burst_cnt):
             cc = []
             for j in range(1, 13):
                 cc.append(abs_vals[i][j] - abs_vals[i][0])
-
-            self.abs_change_vals.append(cc)
+            abs_change_vals.append(cc)
+        
+        if not tertiles:
+            self.abs_change_vals = abs_change_vals
 
         # Calculate percent change
         percent_change_vals = []
@@ -67,24 +70,58 @@ class Analyzer:
                 avg_percent_change[j] += percent_change_vals[i][j]
         avg_percent_change = [x / len(percent_change_vals) for x in avg_percent_change]
 
-        return {
-            "Overall Neurovascular Transduction for " + ("Non-" if not for_bursts else "") + "Bursts":
-                {
-                    "Absolute Change" : 
-                        {
-                            "Average (12 cc)" : avg_abs_change,
-                            "Standard Deviation (12 cc)" : [stats.stdev(np.array(self.abs_change_vals)[:, i]) for i in range(12)], 
-                            "Max AAC" : max(avg_abs_change)
-                        },
+        title = "Overall Neurovascular Transduction for " + ("Non-" if not for_bursts else "") + "Bursts"
 
-                    "Percent Change" :
-                        {
-                            "Average (12 cc)" : avg_percent_change,
-                            "Standard Deviation (12 cc)" : [stats.stdev(np.array(percent_change_vals)[:, i]) for i in range(12)],
-                            "Max APC" : max(avg_percent_change)
-                        }
+        out = {
+                title :
+                    {
+                        "Absolute Change" : 
+                            {
+                                "Each Burst (12 cc)" : abs_change_vals,
+                                "Average (12 cc)" : avg_abs_change,
+                                "Max AAC" : max(avg_abs_change)
+                            },
+
+                        "Percent Change" :
+                            {
+                                "Average (12 cc)" : avg_percent_change,
+                                "Max APC" : max(avg_percent_change)
+                            }
+                    }
+              }
+        
+        if not tertiles:
+            out[title]["Absolute Change"]["Standard Deviation (12 cc)"] = [stats.stdev(np.array(self.abs_change_vals)[:, i]) for i in range(12)],  
+            out[title]["Percent Change"] = [stats.stdev(np.array(percent_change_vals)[:, i]) for i in range(12)]
+        
+        return out
+    
+    def tertiles(self, outcome):
+        minimum = min(outcome)
+        maximum = max(outcome)
+        delta = (maximum - minimum) / 3.0
+        t1 = minimum + delta
+        t2 = minimum + 2*delta
+
+        tertile = [[], [], []]
+
+        for val in outcome:
+            if val < t1:
+                tertile[0].append(val)
+            elif val < t2:
+                tertile[1].append(val)
+            else:
+                tertile[2].append(val)
+
+        return {
+            "Overall NVTD Tertiles" :
+                {
+                    "T1" : self.overall_calculations(tertile[0], tertiles=True),
+                    "T2" : self.overall_calculations(tertile[1], tertiles=True),
+                    "T3" : self.overall_calculations(tertile[2], tertiles=True)
                 }
         }
+            
 
     # Returns a dictionary to access singlet, doublet, triplet, and overall data
     # Each of the burst patterns' data contain the number of occurrences, 

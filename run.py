@@ -14,11 +14,36 @@ if (len(sys.argv) < 2):
 def fstr(f):
     return str(round(f, 2))
 
+def list_stringify(lst, depth=0):
+    str = ""
+
+    if depth != 0:
+        str += "\n"
+    for i in range(depth):
+        str += "\t"
+
+    str += "["
+
+    for i in range(len(lst)):
+        curr = lst[i]
+
+        if isinstance(curr, list):
+            str += list_stringify(curr, depth+1)
+        else:
+            str += fstr(curr) + (", " if i != len(lst) - 1 else "")
+    str += "]"
+
+    return str
+
+
 # Analysis output formatting
 # transduction_analysis.overall_NVTD() returns a dictionary of data based on
 # average absolute change and average absolute percent change. This function
 # formats the data to be pretty for output
 def output_str(out, depth=0):
+    #if type(out) == tuple:
+        #out = list(out)
+
     str = ""
     for title in out.keys():
         curr = out[title]
@@ -28,15 +53,15 @@ def output_str(out, depth=0):
         if isinstance(curr, dict):
             str += title + ":\n" + output_str(curr, depth+1)
         else:
+            if isinstance(curr, tuple):
+                curr = list(curr)
             str += title + ": "
             
             if isinstance(curr, list):
-                str += "["
-                for i in range(len(curr) - 1):
-                    str += fstr(curr[i]) + ", "
-                str += fstr(curr[i+1]) + "]\n"
+                str += list_stringify(curr)
             else:
                 str += fstr(curr) + "\n"
+        str += "\n"
 
     str += "\n"
 
@@ -104,6 +129,8 @@ for participant in xl.sheet_names:
         for bool in [True, False]:
             participant_data[participant][outcome_var].append(analyzer.overall_calculations(outcome, bool)) # Overall NVTD values, burst and non-bursts
             participant_data[participant][outcome_var].append(analyzer.patterns(normalized_burst_amplitude_percent, bool)) # per burst/non-burst frequency
+        
+        participant_data[participant][outcome_var].append(analyzer.tertiles(outcome))
 
 for participant in participant_data.keys():
     data = participant_data[participant]

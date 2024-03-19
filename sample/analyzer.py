@@ -8,25 +8,30 @@ class Analyzer:
     # Number of bursts with 12 post-burst cardiac cycle data
     full_12cc_burst_cnt = 0
 
-    def __init__(self, data_len, burst_checks):
+    def __init__(self, data_len, burst_checks, outcome):
         self.data_len = data_len
         self.burst_checks = burst_checks
+        self.outcome = outcome
 
-    # Calculates max overall transduction values
-    # Returns a dictionary containing with labelled data (for the purpose of writing to file)
-    # i.e. 
-    def overall_NVTD(self, outcome):
+    def burst_check(self, i, for_bursts):
+        return (for_bursts and self.burst_checks[i]) or (not for_bursts and not self.burst_checks[i])
+
+    # Gets absolute values, absolute change values, and percent change values for bursts or non-bursts
+    # Returns a dictionary containing labelled data (for the purpose of writing to file)
+    # Parameters:
+    #   for_bursts (bool) : whether to calculate these values for bursts or non_bursts
+    def overall_calculations(self, for_bursts):
         # Calculating absolute values in sets of 12 post-burst cardiac cycles
         abs_vals = []
         for i in range(self.data_len):
             cc = []
-            if self.burst_checks[i]:
+            if self.burst_check(i, for_bursts):
                 # If it cannot be tracked for 12 cardiac cycles, exit
                 if (i + 13 >= self.data_len):
                     break
                 
                 for j in range(i, i+13):
-                    cc.append(outcome[j])
+                    cc.append(self.outcome[j])
 
                 abs_vals.append(cc)
 
@@ -87,21 +92,23 @@ class Analyzer:
     # Each of the burst patterns' data contain the number of occurrences, 
     # overall NVTD values, and its average normalizde burst amplitude
     #   i.e. 
-    #       burst_pattern()['Singlets']['Count'] is the number of triplet bursts
-    #       burst_pattern()['Doublets']['Overall NVTD (12cc)] is the average 12cc nvtd values for doublets
-    #       burst_pattern()['Overall']['Average Normalized Burst Amplitude'] is the overall average normalized burst amplitude
-    def burst_pattern(self, normalized_burst_amplitude_percent):
+    #       pattern()['Singlets']['Count'] is the number of triplet bursts
+    #       pattern()['Doublets']['Overall NVTD (12cc)] is the average 12cc nvtd values for doublets
+    #       pattern()['Overall']['Average Normalized Burst Amplitude'] is the overall average normalized burst amplitude
+    #           ** NOTE ** Average normalized burst amplitude is only calculated for bursts
+    #           So pattern(data, False)['Singlets']['Average Normalized Burst Amplitude'] is invalid.
+    def patterns(self, normalized_burst_amplitude_percent, for_bursts):
         #TODO: change the structure of this depending on its usage
         # A dictionary of 
         seq_lens = {}
         i = 0
         while i < self.data_len:
             j = i
-            if (self.burst_checks[i]):
+            if self.burst_check(i, for_bursts):
                 seq_lens[i] = 0
 
                 seq_len = 0
-                while j < self.data_len and self.burst_checks[j]:
+                while j < self.data_len and self.burst_check(j, for_bursts):
                     seq_len += 1
                     j += 1
 
@@ -118,6 +125,15 @@ class Analyzer:
                         seq_data_titles[1] : [0]*12,
                         seq_data_titles[2] : 0
                    }
+        if for_bursts:
+            seq_data[seq_data_titles[2]] = 0
+
+            for key in seq_lens.keys():
+                seq_len = seq_lens[key]
+                for i in range(key, key + seq_len):
+                    curr_amplitude = normalized_burst_amplitude_percent[i]
+                    data_by_seq[seqs[seq_len-1]][seq_data_titles[2]] += curr_amplitude
+                    data_by_seq[seqs[3]][seq_data_titles[2]] += curr_amplitude
 
         data_by_seq = {}
         for i in range(4):
@@ -131,13 +147,6 @@ class Analyzer:
                 data_by_seq[seq][seq_data_titles[0]] += 1
                 data_by_seq[seqs[3]][seq_data_titles[1]] = [x + y for x, y in zip(data_by_seq['Overall'][seq_data_titles[1]], self.abs_change_vals[i])]
                 data_by_seq[seqs[3]][seq_data_titles[0]] += 1
-
-        for key in seq_lens.keys():
-            seq_len = seq_lens[key]
-            for i in range(key, key + seq_len):
-                curr_amplitude = normalized_burst_amplitude_percent[i]
-                data_by_seq[seqs[seq_len-1]][seq_data_titles[2]] += curr_amplitude
-                data_by_seq[seqs[3]][seq_data_titles[2]] += curr_amplitude
 
         for seq in seqs:
             data_by_seq[seq][seq_data_titles[2]] /= data_by_seq[seq][seq_data_titles[0]]

@@ -2,7 +2,6 @@ import sys
 import os
 import itertools
 import pandas as pd
-import statistics as stats
 import sample.analyzer as anlz 
 
 # Check validity of call
@@ -40,7 +39,6 @@ col_names = ["SUBID", "Normalized Burst Amplitude",
 
 
 cumulative_data = []
-#cumulative_data.append(col_names)
 for participant in xl.sheet_names:
     participant_data = [0]*125
     df = xl.parse(participant)
@@ -106,4 +104,3 @@ for participant in xl.sheet_names:
 
 cum_df = pd.DataFrame(cumulative_data)
 cum_df.to_excel("NVTD_Cumulative.xlsx", header=col_names, index=False)
-print(cum_df)

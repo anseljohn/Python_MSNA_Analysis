@@ -1,5 +1,4 @@
 import statistics as stats
-import numpy as np
 
 class Analyzer:
     # Absolute change values in sets of 12 cardiac cycles
@@ -33,6 +32,7 @@ class Analyzer:
 
                 abs_vals.append(cc)
 
+        if len(abs_vals) < 12: return ["NaN"]*13
         self.full_12cc_burst_cnt = len(abs_vals) # The number of bursts with 12 post-burst cc data available
 
         abs_change_vals = []

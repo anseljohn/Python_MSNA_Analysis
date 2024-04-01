@@ -15,7 +15,7 @@ Analysis is done using the methods in the paper's [analysis spreadsheet](https:/
 ### Install required python packages
  Make sure the required python packages are installed:
 
-    $ python -m pip install pandas, openpyxl
+    $ python -m pip install pandas, openpyxl, xlsxwriter
 
 ### (Optional) Set up the output excel spreadsheet
 TODO: Add screenshot of Miguel's output spreadsheet format + instructions

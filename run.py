@@ -1,6 +1,8 @@
 import sys
 import os
+import itertools
 import pandas as pd
+import statistics as stats
 import sample.analyzer as anlz 
 
 # Check validity of call
@@ -10,62 +12,8 @@ if (len(sys.argv) < 2):
 ########################
 #   Helper functions   #
 ########################
-# Convert to string and round to two decimal points
-def fstr(f):
-    return str(round(f, 2))
-
-def list_stringify(lst, depth=0):
-    str = ""
-
-    if depth != 0:
-        str += "\n"
-    for i in range(depth):
-        str += "\t"
-
-    str += "["
-
-    for i in range(len(lst)):
-        curr = lst[i]
-
-        if isinstance(curr, list):
-            str += list_stringify(curr, depth+1)
-        else:
-            str += fstr(curr) + (", " if i != len(lst) - 1 else "")
-    str += "]"
-
-    return str
-
-
-# Analysis output formatting
-# transduction_analysis.overall_NVTD() returns a dictionary of data based on
-# average absolute change and average absolute percent change. This function
-# formats the data to be pretty for output
-def output_str(out, depth=0):
-    #if type(out) == tuple:
-        #out = list(out)
-
-    str = ""
-    for title in out.keys():
-        curr = out[title]
-        for i in range(depth):
-            str += "\t"
-
-        if isinstance(curr, dict):
-            str += title + ":\n" + output_str(curr, depth+1)
-        else:
-            if isinstance(curr, tuple):
-                curr = list(curr)
-            str += title + ": "
-            
-            if isinstance(curr, list):
-                str += list_stringify(curr)
-            else:
-                str += fstr(curr) + "\n"
-        str += "\n"
-
-    str += "\n"
-
-    return str
+def col_data(df, col_name):
+    return df.iloc[:, df.columns.get_loc(col_name)]
 
 #######################
 #   Data formatting   #
@@ -74,29 +22,44 @@ def output_str(out, depth=0):
 if not os.path.exists("./analysis_output"):
     os.mkdir("./analysis_output")
 
-df = pd.read_excel(sys.argv[1])          # Reading in the file
-df.drop([0, 1], inplace=True)            # Remove units and titles
-df.reset_index(drop=True, inplace=True)  # Reset indexing back to 0
-
 xl = pd.ExcelFile(sys.argv[1])
-outcome_variables = {"MDP": 5, "MAP": 6} # Outcome variables and their respective indices
+outcome_variables = {"MAP": 7, "DBP": 8} # Outcome variables and their respective indices
 
-#TODO: Handle outputting for multiple participants, add rest of code into FOR
-participant_data = {}
+col_names = ["SUBID", "Normalized Burst Amplitude",
+             "DBP_CC1", "DBP_CC2", "DBP_CC3", "DBP_CC4", "DBP_CC5", "DBP_CC6", "DBP_CC7", "DBP_CC8", "DBP_CC9", "DBP_CC10", "DBP_CC11", "DBP_CC12", "DBP_Avg.",
+             "MAP_C1", "MAP_CC2", "MAP_CC3", "MAP_CC4", "MAP_CC5", "MAP_CC6", "MAP_CC7", "MAP_CC8", "MAP_CC9", "MAP_CC10", "MAP_CC11", "MAP_CC12", "MAP_Avg.",
+             "T1_DBP_CC1", "T1_DBP_CC2", "T1_DBP_CC3", "T1_DBP_CC4", "T1_DBP_CC5", "T1_DBP_CC6", "T1_DBP_CC7", "T1_DBP_CC8", "T1_DBP_CC9", "T1_DBP_CC10", "T1_DBP_CC11", "T1_DBP_CC12", "T1_DBP_Avg.",
+             "T2_DBP_CC1", "T2_DBP_CC2", "T2_DBP_CC3", "T2_DBP_CC4", "T2_DBP_CC5", "T2_DBP_CC6", "T2_DBP_CC7", "T2_DBP_CC8", "T2_DBP_CC9", "T2_DBP_CC10", "T2_DBP_CC11", "T2_DBP_CC12", "T2_DBP_Avg.",
+             "T3_DBP_CC1", "T3_DBP_CC2", "T3_DBP_CC3", "T3_DBP_CC4", "T3_DBP_CC5", "T3_DBP_CC6", "T3_DBP_CC7", "T3_DBP_CC8", "T3_DBP_CC9", "T3_DBP_CC10", "T3_DBP_CC11", "T3_DBP_CC12", "T3_DBP_Avg.",
+             "T1_MAP_CC1", "T1_MAP_CC2", "T1_MAP_CC3", "T1_MAP_CC4", "T1_MAP_CC5", "T1_MAP_CC6", "T1_MAP_CC7", "T1_MAP_CC8", "T1_MAP_CC9", "T1_MAP_CC10", "T1_MAP_CC11", "T1_MAP_CC12", "T1_MAP_Avg.",
+             "T2_MAP_CC1", "T2_MAP_CC2", "T2_MAP_CC3", "T2_MAP_CC4", "T2_MAP_CC5", "T2_MAP_CC6", "T2_MAP_CC7", "T2_MAP_CC8", "T2_MAP_CC9", "T2_MAP_CC10", "T2_MAP_CC11", "T2_MAP_CC12", "T2_MAP_Avg.",
+             "T3_MAP_CC1", "T3_MAP_CC2", "T3_MAP_CC3", "T3_MAP_CC4", "T3_MAP_CC5", "T3_MAP_CC6", "T3_MAP_CC7", "T3_MAP_CC8", "T3_MAP_CC9", "T3_MAP_CC10", "T3_MAP_CC11", "T3_MAP_CC12", "T3_MAP_Avg.",
+             "DBP_Non_Bursts_CC1", "DBP_Non_Bursts_CC2", "DBP_Non_Bursts_CC3", "DBP_Non_Bursts_CC4", "DBP_Non_Bursts_CC5", "DBP_Non_Bursts_CC6", "DBP_Non_Bursts_CC7", "DBP_Non_Bursts_CC8", "DBP_Non_Bursts_CC9", "DBP_Non_Bursts_CC10", "DBP_Non_Bursts_CC11", "DBP_Non_Bursts_CC12", "DBP_Non_Bursts_Avg.",
+             "MAP_Non_Bursts_CC1", "MAP_Non_Bursts_CC2", "MAP_Non_Bursts_CC3", "MAP_Non_Bursts_CC4", "MAP_Non_Bursts_CC5", "MAP_Non_Bursts_CC6", "MAP_Non_Bursts_CC7", "MAP_Non_Bursts_CC8", "MAP_Non_Bursts_CC9", "MAP_Non_Bursts_CC10", "MAP_Non_Bursts_CC11", "MAP_Non_Bursts_CC12", "MAP_Non_Bursts_Avg.",
+             ]
+
+
+cumulative_data = []
+#cumulative_data.append(col_names)
 for participant in xl.sheet_names:
-    participant_data[participant] = {}
-
+    participant_data = [0]*125
     df = xl.parse(participant)
     df.drop([0, 1], inplace=True)
+    df.dropna(how="all", inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    # Additional formatting in case of trailing empty rows
+    for index, row in df.iterrows():
+        if not isinstance(row["Integrated MSNA"], float):
+            df.drop([index], inplace=True)
 
     ############################################################
     #   Getting required arguments for analyses calculations   #
     ############################################################
-    comnums = df.iloc[:, 4] # The burst comment numbers
-
-    #TODO: Change this value to 7 once MAP is added into data pad
-    burst_sizes = df.iloc[:, 6] # The burst size or "Integrated MSNA max-min"
+    comnums = col_data(df, "Integrated MSNA.1") # The burst comment numbers
+    print(comnums)
+    burst_sizes = col_data(df, "Integrated MSNA") # The burst size or "Integrated MSNA max-min"
+    print(burst_sizes)
     data_len = len(comnums) # The default length of data
     burst_checks = []
     normalized_burst_amplitude_percent = [] # Normalize burst sizes
@@ -113,31 +76,34 @@ for participant in xl.sheet_names:
 
     # Normalizing burst sizes
     largest_burst = burst_sizes.max() # Grabbing the largest burst
+    avg_norm_burst_amp = 0
+    burstcnt = 0
     for i in range(data_len):
         if burst_checks[i]:
-            normalized_burst_amplitude_percent.append(burst_sizes[i] / largest_burst * 100)
-        else:
-            normalized_burst_amplitude_percent.append(None)
+            avg_norm_burst_amp += burst_sizes[i] / largest_burst * 100
+            burstcnt += 1
+    avg_norm_burst_amp /= burstcnt
 
-    # Analyzing for MDP and MAP
-    for outcome_var in outcome_variables.keys():
-        participant_data[participant][outcome_var] = []
-        # Getting the outcome variable data
-        outcome = df.iloc[:, outcome_variables[outcome_var]] if outcome_var == "MDP" else df.iloc[:, 5] #TODO: remove IF once MAP is added
-        analyzer = anlz.Analyzer(data_len, burst_checks) # Instanciating the analyzer
+    # Analyzing for DBP and MAP
+    dbp_data = col_data(df, "Diastolic")
+    map_data = col_data(df, "Mean Arterial BP")
+    analyzer = anlz.Analyzer(data_len, burst_checks)
+    dbp = analyzer.overall_calculations(dbp_data)
+    map = analyzer.overall_calculations(map_data)
+    tdbp = analyzer.tertiles(dbp_data)
+    tmap = analyzer.tertiles(map_data)
+    dbp_non = analyzer.overall_calculations(dbp_data, for_bursts=False)
+    map_non = analyzer.overall_calculations(map_data, for_bursts=False)
 
-        for bool in [True, False]:
-            participant_data[participant][outcome_var].append(analyzer.overall_calculations(outcome, bool)) # Overall NVTD values, burst and non-bursts
-            participant_data[participant][outcome_var].append(analyzer.patterns(normalized_burst_amplitude_percent, bool)) # per burst/non-burst frequency
-        
-        participant_data[participant][outcome_var].append(analyzer.tertiles(outcome))
+    cumulative_data.append(list(itertools.chain([participant],
+                                                [avg_norm_burst_amp],
+                                                dbp, 
+                                                map, 
+                                                tdbp[0], tdbp[1], tdbp[2],
+                                                tmap[0], tmap[1], tmap[2],
+                                                dbp_non,
+                                                map_non)))
 
-for participant in participant_data.keys():
-    data = participant_data[participant]
-    for outcome_var in data.keys():
-        # Writing everything to file
-        with open('./analysis_output/' + participant + '_' + outcome_var + '_transduction_analysis.txt', 'w') as f:
-            f.write("Transduction Analysis Using " + outcome_var + " as the Outcome Variable\n\n")
-
-            for d in data[outcome_var]:
-                f.write(output_str(d))
+cum_df = pd.DataFrame(cumulative_data)
+cum_df.to_excel("NVTD_Cumulative.xlsx", header=col_names, index=False)
+print(cum_df)

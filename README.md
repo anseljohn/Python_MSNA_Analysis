@@ -3,6 +3,11 @@ An open-source program to analyze spontaneous sympathetic neurohemodynamic trans
 
 Analysis is done using the methods in the paper's [analysis spreadsheet](https://doi.org/10.6084/m9.figshare.13692139).
 
+This analysis outputs the following (per participant) using both DBP and MAP (separately):
+- 12 cc transduction averages 
+- 12 cc tertile transduction averages
+- 12 cc non-burst averages
+
 ## Setup
 ### Participant data formatting
 1. Open your .adicht file in LabChart
@@ -24,6 +29,8 @@ TODO: Add screenshot of Miguel's output spreadsheet format + instructions
 Running the analysis requires the path to the data pad spreadsheet:
 
     $ python run.py /path/to/spreadsheet.xlsx
+
+This will create a cumulative spreadsheet in the ```out``` folder, named ```NVTD_Cumulative_Output.xlsx```.
 
 ## Notes
 This analysis does some things differently than in the paper, the differences are highlighted below.

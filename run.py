@@ -27,12 +27,6 @@ outcome_variables = {"MAP": 7, "DBP": 8} # Outcome variables and their respectiv
 col_names = ["SUBID", "Normalized Burst Amplitude",
              "DBP_CC1", "DBP_CC2", "DBP_CC3", "DBP_CC4", "DBP_CC5", "DBP_CC6", "DBP_CC7", "DBP_CC8", "DBP_CC9", "DBP_CC10", "DBP_CC11", "DBP_CC12", "DBP_Avg.",
              "MAP_C1", "MAP_CC2", "MAP_CC3", "MAP_CC4", "MAP_CC5", "MAP_CC6", "MAP_CC7", "MAP_CC8", "MAP_CC9", "MAP_CC10", "MAP_CC11", "MAP_CC12", "MAP_Avg.",
-             "T1_DBP_CC1", "T1_DBP_CC2", "T1_DBP_CC3", "T1_DBP_CC4", "T1_DBP_CC5", "T1_DBP_CC6", "T1_DBP_CC7", "T1_DBP_CC8", "T1_DBP_CC9", "T1_DBP_CC10", "T1_DBP_CC11", "T1_DBP_CC12", "T1_DBP_Avg.",
-             "T2_DBP_CC1", "T2_DBP_CC2", "T2_DBP_CC3", "T2_DBP_CC4", "T2_DBP_CC5", "T2_DBP_CC6", "T2_DBP_CC7", "T2_DBP_CC8", "T2_DBP_CC9", "T2_DBP_CC10", "T2_DBP_CC11", "T2_DBP_CC12", "T2_DBP_Avg.",
-             "T3_DBP_CC1", "T3_DBP_CC2", "T3_DBP_CC3", "T3_DBP_CC4", "T3_DBP_CC5", "T3_DBP_CC6", "T3_DBP_CC7", "T3_DBP_CC8", "T3_DBP_CC9", "T3_DBP_CC10", "T3_DBP_CC11", "T3_DBP_CC12", "T3_DBP_Avg.",
-             "T1_MAP_CC1", "T1_MAP_CC2", "T1_MAP_CC3", "T1_MAP_CC4", "T1_MAP_CC5", "T1_MAP_CC6", "T1_MAP_CC7", "T1_MAP_CC8", "T1_MAP_CC9", "T1_MAP_CC10", "T1_MAP_CC11", "T1_MAP_CC12", "T1_MAP_Avg.",
-             "T2_MAP_CC1", "T2_MAP_CC2", "T2_MAP_CC3", "T2_MAP_CC4", "T2_MAP_CC5", "T2_MAP_CC6", "T2_MAP_CC7", "T2_MAP_CC8", "T2_MAP_CC9", "T2_MAP_CC10", "T2_MAP_CC11", "T2_MAP_CC12", "T2_MAP_Avg.",
-             "T3_MAP_CC1", "T3_MAP_CC2", "T3_MAP_CC3", "T3_MAP_CC4", "T3_MAP_CC5", "T3_MAP_CC6", "T3_MAP_CC7", "T3_MAP_CC8", "T3_MAP_CC9", "T3_MAP_CC10", "T3_MAP_CC11", "T3_MAP_CC12", "T3_MAP_Avg.",
              "DBP_Non_Bursts_CC1", "DBP_Non_Bursts_CC2", "DBP_Non_Bursts_CC3", "DBP_Non_Bursts_CC4", "DBP_Non_Bursts_CC5", "DBP_Non_Bursts_CC6", "DBP_Non_Bursts_CC7", "DBP_Non_Bursts_CC8", "DBP_Non_Bursts_CC9", "DBP_Non_Bursts_CC10", "DBP_Non_Bursts_CC11", "DBP_Non_Bursts_CC12", "DBP_Non_Bursts_Avg.",
              "MAP_Non_Bursts_CC1", "MAP_Non_Bursts_CC2", "MAP_Non_Bursts_CC3", "MAP_Non_Bursts_CC4", "MAP_Non_Bursts_CC5", "MAP_Non_Bursts_CC6", "MAP_Non_Bursts_CC7", "MAP_Non_Bursts_CC8", "MAP_Non_Bursts_CC9", "MAP_Non_Bursts_CC10", "MAP_Non_Bursts_CC11", "MAP_Non_Bursts_CC12", "MAP_Non_Bursts_Avg.",
              ]
@@ -86,8 +80,6 @@ for participant in xl.sheet_names:
     analyzer = anlz.Analyzer(data_len, burst_checks)
     dbp = analyzer.overall_calculations(dbp_data)
     map = analyzer.overall_calculations(map_data)
-    tdbp = analyzer.tertiles(dbp_data)
-    tmap = analyzer.tertiles(map_data)
     dbp_non = analyzer.overall_calculations(dbp_data, for_bursts=False)
     map_non = analyzer.overall_calculations(map_data, for_bursts=False)
 
@@ -95,8 +87,6 @@ for participant in xl.sheet_names:
                                                 [avg_norm_burst_amp],
                                                 dbp, 
                                                 map, 
-                                                tdbp[0], tdbp[1], tdbp[2],
-                                                tmap[0], tmap[1], tmap[2],
                                                 dbp_non,
                                                 map_non)))
     

@@ -17,7 +17,7 @@ class Analyzer:
     # Returns a dictionary containing labelled data (for the purpose of writing to file)
     # Parameters:
     #   for_bursts (bool) : whether to calculate these values for bursts or non_bursts
-    def overall_calculations(self, outcome, for_bursts=True, tertiles=False):
+    def overall_calculations(self, outcome, for_bursts=True):
         # Calculating absolute values in sets of 12 post-burst cardiac cycles
         abs_vals = []
         for i in range(self.data_len):
@@ -43,8 +43,7 @@ class Analyzer:
                 cc.append(abs_vals[i][j] - abs_vals[i][0])
             abs_change_vals.append(cc)
         
-        if not tertiles:
-            self.abs_change_vals = abs_change_vals
+        self.abs_change_vals = abs_change_vals
 
         # Averaging a set of 12 cardiac cycles
         avg_abs_change = [0]*12
@@ -56,24 +55,3 @@ class Analyzer:
 
         avg_abs_change.append(stats.fmean(avg_abs_change))
         return avg_abs_change
-    
-    def tertiles(self, outcome):
-        minimum = min(outcome)
-        maximum = max(outcome)
-        delta = (maximum - minimum) / 3.0
-        t1 = minimum + delta
-        t2 = minimum + 2*delta
-
-        tertile = [[], [], []]
-
-        for val in outcome:
-            if val < t1:
-                tertile[0].append(val)
-            elif val < t2:
-                tertile[1].append(val)
-            else:
-                tertile[2].append(val)
-
-        return [self.overall_calculations(tertile[0], tertiles=True),
-                self.overall_calculations(tertile[1], tertiles=True),
-                self.overall_calculations(tertile[2], tertiles=True)]

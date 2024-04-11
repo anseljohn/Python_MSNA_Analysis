@@ -55,9 +55,7 @@ for participant in xl.sheet_names:
     #   Getting required arguments for analyses calculations   #
     ############################################################
     comnums = col_data(df, "Integrated MSNA.1") # The burst comment numbers
-    print(comnums)
     burst_sizes = col_data(df, "Integrated MSNA") # The burst size or "Integrated MSNA max-min"
-    print(burst_sizes)
     data_len = len(comnums) # The default length of data
     burst_checks = []
     normalized_burst_amplitude_percent = [] # Normalize burst sizes
@@ -101,6 +99,9 @@ for participant in xl.sheet_names:
                                                 tmap[0], tmap[1], tmap[2],
                                                 dbp_non,
                                                 map_non)))
+    
+if not os.path.exists("./out"):
+    os.makedirs("./out")
 
 cum_df = pd.DataFrame(cumulative_data)
-cum_df.to_excel("NVTD_Cumulative.xlsx", header=col_names, index=False)
+cum_df.to_excel("./out/NVTD_Cumulative_Output.xlsx", header=col_names, index=False)

@@ -1,10 +1,11 @@
+########## Importing Necessary Python Modules ##########
 import sys
 import os
 import itertools
 import pandas as pd
 import sample.analyzer as anlz 
 
-# Check validity of call
+########## Check Validity of Call ##########
 if (len(sys.argv) < 2):
     sys.exit("Syntax Error:\n\t$ python analyze.py [path/to/spreadsheet.py]")
 

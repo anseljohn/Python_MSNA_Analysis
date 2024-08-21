@@ -30,6 +30,14 @@ col_names = ["SUBID", "Normalized Burst Amplitude",
              "T1_MAP_CC1", "T1_MAP_CC2", "T1_MAP_CC3", "T1_MAP_CC4", "T1_MAP_CC5", "T1_MAP_CC6", "T1_MAP_CC7", "T1_MAP_CC8", "T1_MAP_CC9", "T1_MAP_CC10", "T1_MAP_CC11", "T1_MAP_CC12", "T1_MAP_Avg.",
              "T2_MAP_CC1", "T2_MAP_CC2", "T2_MAP_CC3", "T2_MAP_CC4", "T2_MAP_CC5", "T2_MAP_CC6", "T2_MAP_CC7", "T2_MAP_CC8", "T2_MAP_CC9", "T2_MAP_CC10", "T2_MAP_CC11", "T2_MAP_CC12", "T2_MAP_Avg.",
              "T3_MAP_CC1", "T3_MAP_CC2", "T3_MAP_CC3", "T3_MAP_CC4", "T3_MAP_CC5", "T3_MAP_CC6", "T3_MAP_CC7", "T3_MAP_CC8", "T3_MAP_CC9", "T3_MAP_CC10", "T3_MAP_CC11", "T3_MAP_CC12", "T3_MAP_Avg.",
+             "Q1_DBP_CC1", "Q1_DBP_CC2", "Q1_DBP_CC3", "Q1_DBP_CC4", "Q1_DBP_CC5", "Q1_DBP_CC6", "Q1_DBP_CC7", "Q1_DBP_CC8", "Q1_DBP_CC9", "Q1_DBP_CC10", "Q1_DBP_CC11", "Q1_DBP_CC12", "Q1_DBP_Avg.",
+             "Q2_DBP_CC1", "Q2_DBP_CC2", "Q2_DBP_CC3", "Q2_DBP_CC4", "Q2_DBP_CC5", "Q2_DBP_CC6", "Q2_DBP_CC7", "Q2_DBP_CC8", "Q2_DBP_CC9", "Q2_DBP_CC10", "Q2_DBP_CC11", "Q2_DBP_CC12", "Q2_DBP_Avg.",
+             "Q3_DBP_CC1", "Q3_DBP_CC2", "Q3_DBP_CC3", "Q3_DBP_CC4", "Q3_DBP_CC5", "Q3_DBP_CC6", "Q3_DBP_CC7", "Q3_DBP_CC8", "Q3_DBP_CC9", "Q3_DBP_CC10", "Q3_DBP_CC11", "Q3_DBP_CC12", "Q3_DBP_Avg.",
+             "Q4_DBP_CC1", "Q4_DBP_CC2", "Q4_DBP_CC3", "Q4_DBP_CC4", "Q4_DBP_CC5", "Q4_DBP_CC6", "Q4_DBP_CC7", "Q4_DBP_CC8", "Q4_DBP_CC9", "Q4_DBP_CC10", "Q4_DBP_CC11", "Q4_DBP_CC12", "Q4_DBP_Avg.",
+             "Q1_MAP_CC1", "Q1_MAP_CC2", "Q1_MAP_CC3", "Q1_MAP_CC4", "Q1_MAP_CC5", "Q1_MAP_CC6", "Q1_MAP_CC7", "Q1_MAP_CC8", "Q1_MAP_CC9", "Q1_MAP_CC10", "Q1_MAP_CC11", "Q1_MAP_CC12", "Q1_MAP_Avg.",
+             "Q2_MAP_CC1", "Q2_MAP_CC2", "Q2_MAP_CC3", "Q2_MAP_CC4", "Q2_MAP_CC5", "Q2_MAP_CC6", "Q2_MAP_CC7", "Q2_MAP_CC8", "Q2_MAP_CC9", "Q2_MAP_CC10", "Q2_MAP_CC11", "Q2_MAP_CC12", "Q2_MAP_Avg.",
+             "Q3_MAP_CC1", "Q3_MAP_CC2", "Q3_MAP_CC3", "Q3_MAP_CC4", "Q3_MAP_CC5", "Q3_MAP_CC6", "Q3_MAP_CC7", "Q3_MAP_CC8", "Q3_MAP_CC9", "Q3_MAP_CC10", "Q3_MAP_CC11", "Q3_MAP_CC12", "Q3_MAP_Avg.",
+             "Q4_MAP_CC1", "Q4_MAP_CC2", "Q4_MAP_CC3", "Q4_MAP_CC4", "Q4_MAP_CC5", "Q4_MAP_CC6", "Q4_MAP_CC7", "Q4_MAP_CC8", "Q4_MAP_CC9", "Q4_MAP_CC10", "Q4_MAP_CC11", "Q4_MAP_CC12", "Q4_MAP_Avg.",
              "DBP_Non_Bursts_CC1", "DBP_Non_Bursts_CC2", "DBP_Non_Bursts_CC3", "DBP_Non_Bursts_CC4", "DBP_Non_Bursts_CC5", "DBP_Non_Bursts_CC6", "DBP_Non_Bursts_CC7", "DBP_Non_Bursts_CC8", "DBP_Non_Bursts_CC9", "DBP_Non_Bursts_CC10", "DBP_Non_Bursts_CC11", "DBP_Non_Bursts_CC12", "DBP_Non_Bursts_Avg.",
              "MAP_Non_Bursts_CC1", "MAP_Non_Bursts_CC2", "MAP_Non_Bursts_CC3", "MAP_Non_Bursts_CC4", "MAP_Non_Bursts_CC5", "MAP_Non_Bursts_CC6", "MAP_Non_Bursts_CC7", "MAP_Non_Bursts_CC8", "MAP_Non_Bursts_CC9", "MAP_Non_Bursts_CC10", "MAP_Non_Bursts_CC11", "MAP_Non_Bursts_CC12", "MAP_Non_Bursts_Avg.",
              ]
@@ -87,8 +95,10 @@ for participant in xl.sheet_names:
     analyzer = anlz.Analyzer(data_len, burst_checks)
     dbp = analyzer.overall_calculations(dbp_data)
     map = analyzer.overall_calculations(map_data)
-    tdbp = analyzer.tertiles(dbp_data)
-    tmap = analyzer.tertiles(map_data)
+    tdbp = analyzer.xtiles(dbp_data, dbp_data, anlz.DivisionMethod.TERTILES)
+    tmap = analyzer.xtiles(map_data, dbp_data, anlz.DivisionMethod.TERTILES)
+    burst_amplitude_quartiles_dbp = analyzer.xtiles(dbp_data, burst_sizes, anlz.DivisionMethod.QUARTILES)
+    burst_amplitude_quartiles_map = analyzer.xtiles(map_data, burst_sizes, anlz.DivisionMethod.QUARTILES)
 
     #TODO: Write burst amplitude quartiles (using normalized burst amplitude percent)
 
@@ -98,9 +108,11 @@ for participant in xl.sheet_names:
     cumulative_data.append(list(itertools.chain([participant],
                                                 [avg_norm_burst_amp],
                                                 dbp, 
-                                                map, 
-                                                tdbp[0], tdbp[1], tdbp[2],
-                                                tmap[0], tmap[1], tmap[2],
+                                                map,
+                                                list(itertools.chain(*tdbp)),
+                                                list(itertools.chain(*tmap)),
+                                                list(itertools.chain(*burst_amplitude_quartiles_dbp)),
+                                                list(itertools.chain(*burst_amplitude_quartiles_map)),
                                                 dbp_non,
                                                 map_non)))
     

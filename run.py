@@ -18,10 +18,6 @@ def col_data(df, col_name):
 #######################
 #   Data formatting   #
 #######################
-# Create output directory
-if not os.path.exists("./analysis_output"):
-    os.mkdir("./analysis_output")
-
 xl = pd.ExcelFile(sys.argv[1])
 outcome_variables = {"MAP": 7, "DBP": 8} # Outcome variables and their respective indices
 

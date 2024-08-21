@@ -65,12 +65,11 @@ for participant in xl.sheet_names:
     # Determining bursts from burst comment numbers
     burst_cnt = 0
     for i in range(data_len):
-        if i == 0:
-            if (comnums[i] != comnums[i+1]): burst_cnt += 1
-            burst_checks.append(comnums[i] != comnums[i+1])
+        if (i == 0 and comnums[i] != comnums[i+1]) or comnums[i] != comnums[i-1]:
+            burst_checks.append(True)
+            burst_cnt += 1
         else:
-            if (comnums[i] != comnums[i-1]): burst_cnt +=1
-            burst_checks.append(comnums[i] != comnums[i-1])
+            burst_checks.append(False)
 
     # Normalizing burst sizes
     largest_burst = burst_sizes.max() # Grabbing the largest burst

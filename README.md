@@ -20,7 +20,7 @@ This analysis outputs the following (per participant) using both DBP and MAP (se
 ### Install required python packages
  Make sure the required python packages are installed:
 
-    $ python -m pip install pandas, openpyxl, xlsxwriter
+    python -m pip install pandas openpyxl xlsxwriter
 
 ### (Optional) Set up the output excel spreadsheet
 TODO: Add screenshot of Miguel's output spreadsheet format + instructions
@@ -28,7 +28,7 @@ TODO: Add screenshot of Miguel's output spreadsheet format + instructions
 ## Running the analysis
 Running the analysis requires the path to the data pad spreadsheet:
 
-    $ python run.py /path/to/spreadsheet.xlsx
+    python run.py /path/to/spreadsheet.xlsx
 
 This will create a cumulative spreadsheet in the ```out``` folder, named ```NVTD_Cumulative_Output.xlsx```.
 

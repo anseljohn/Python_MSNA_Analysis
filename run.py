@@ -37,8 +37,13 @@ col_names = ["SUBID", "Normalized Burst Amplitude",
 
 cumulative_data = []
 for participant in xl.sheet_names:
+    # Allocate 125 columns of data for the participant
     participant_data = [0]*125
+
+    # Get the participant's sheet
     df = xl.parse(participant)
+
+    # Formatting - getting rid of header
     df.drop([0, 1], inplace=True)
     df.dropna(how="all", inplace=True)
     df.reset_index(drop=True, inplace=True)
@@ -85,6 +90,9 @@ for participant in xl.sheet_names:
     map = analyzer.overall_calculations(map_data)
     tdbp = analyzer.tertiles(dbp_data)
     tmap = analyzer.tertiles(map_data)
+
+    #TODO: Write burst amplitude quartiles (using normalized burst amplitude percent)
+
     dbp_non = analyzer.overall_calculations(dbp_data, for_bursts=False)
     map_non = analyzer.overall_calculations(map_data, for_bursts=False)
 
